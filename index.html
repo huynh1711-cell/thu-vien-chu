@@ -122,6 +122,43 @@ main{padding:10px 6vw 80px;max-width:1200px;margin:0 auto;}
   margin-bottom:46px;
 }
 
+/* ===== Genre chips ===== */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+.chip{
+  font-family:'EB Garamond',serif;font-size:13px;font-weight:600;letter-spacing:.4px;
+  padding:6px 15px;border-radius:20px;border:1px solid rgba(241,230,208,.35);
+  background:transparent;color:rgba(241,230,208,.8);cursor:pointer;transition:.15s;
+}
+.chip:hover{border-color:var(--gold);}
+.chip.active{background:var(--gold);color:var(--wood);border-color:var(--gold);}
+.genre-badge{
+  display:inline-block;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  padding:4px 12px;border-radius:20px;background:var(--forest);color:var(--paper);margin-bottom:10px;
+}
+select{
+  width:100%;padding:11px 13px;border:1px solid var(--paper-dark);border-radius:3px;
+  font-family:'Lora',serif;font-size:15px;background:#fbf6ea;color:var(--ink);
+}
+
+/* ===== Comments ===== */
+.comment-section{margin-top:36px;padding-top:24px;border-top:1px solid var(--paper-dark);}
+.comment{padding:14px 0;border-bottom:1px solid var(--paper-dark);}
+.comment strong{font-family:'Playfair Display',serif;color:var(--leather);}
+.comment p{margin:4px 0 0;line-height:1.6;color:var(--ink-soft);}
+.comment-form{margin-top:20px;}
+.comment-form input, .comment-form textarea{margin-bottom:10px;}
+.comment-form textarea{min-height:80px;}
+
+/* ===== Small action buttons on chapter rows ===== */
+.chapter-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--paper-dark);gap:10px;}
+.chapter-row .row-actions{display:flex;gap:6px;flex-shrink:0;}
+.mini-btn{
+  font-family:'EB Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+  padding:5px 12px;border-radius:3px;border:1px solid var(--ink-soft);background:transparent;color:var(--ink-soft);cursor:pointer;
+}
+.mini-btn:hover{border-color:var(--leather);color:var(--leather);}
+.mini-btn.danger:hover{background:var(--leather);color:var(--paper);border-color:var(--leather);}
+
 /* ===== Book card / detail ===== */
 .book-page{
   background:var(--paper);
@@ -224,18 +261,26 @@ function esc(s){ const d=document.createElement('div'); d.innerText=s??''; retur
 function simpleHash(s){ let h=0; for(const c of s) h=(h*33+c.charCodeAt(0))>>>0; return h.toString(36); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
-let state = { view:'home', user:null, currentBookId:null, currentChapterId:null };
+let state = { view:'home', user:null, currentBookId:null, currentChapterId:null, genreFilter:'Tất cả', editingChapterId:null };
+
+function setGenreFilter(g){ state.genreFilter = g; render(); }
+
+const GENRES = ['Tiểu thuyết','Ngôn tình','Trinh thám','Kinh dị','Khoa học viễn tưởng','Kỳ ảo','Đời thường','Truyện ngắn','Khác'];
 
 async function loadBooks(){
   const { data, error } = await sb.from('books').select('*').order('created_at', {ascending:false});
   if(error) throw error;
-  return data.map(b=>({id:b.id, title:b.title, description:b.description, author:b.author, color:b.color}));
+  return data.map(b=>({id:b.id, title:b.title, description:b.description, author:b.author, color:b.color, genre:b.genre||'Khác'}));
 }
-async function insertBook(title, description, author){
+async function insertBook(title, description, author, genre){
   const color = colorFor(title+author);
-  const { data, error } = await sb.from('books').insert({title, description, author, color}).select().single();
+  const { data, error } = await sb.from('books').insert({title, description, author, color, genre}).select().single();
   if(error) throw error;
   return data;
+}
+async function deleteBook(bookId){
+  const { error } = await sb.from('books').delete().eq('id', bookId);
+  if(error) throw error;
 }
 async function loadChapters(bookId){
   const { data, error } = await sb.from('chapters').select('*').eq('book_id', bookId).order('created_at', {ascending:true});
@@ -244,6 +289,23 @@ async function loadChapters(bookId){
 }
 async function insertChapter(bookId, title, content){
   const { error } = await sb.from('chapters').insert({book_id:bookId, title, content});
+  if(error) throw error;
+}
+async function updateChapter(chapterId, title, content){
+  const { error } = await sb.from('chapters').update({title, content}).eq('id', chapterId);
+  if(error) throw error;
+}
+async function deleteChapter(chapterId){
+  const { error } = await sb.from('chapters').delete().eq('id', chapterId);
+  if(error) throw error;
+}
+async function loadComments(bookId){
+  const { data, error } = await sb.from('comments').select('*').eq('book_id', bookId).order('created_at', {ascending:false});
+  if(error) throw error;
+  return data;
+}
+async function insertComment(bookId, name, content){
+  const { error } = await sb.from('comments').insert({book_id:bookId, name, content});
   if(error) throw error;
 }
 async function usernameTaken(u){
@@ -269,7 +331,7 @@ function renderNav(){
     nav.innerHTML = `
       <span class="btn ghost" style="cursor:default">Xin chào, ${esc(state.user)}</span>
       <button class="btn" onclick="go('dashboard')">Sách của tôi</button>
-      <button class="btn solid" onclick="go('write', {currentBookId:null})">+ Viết sách mới</button>
+      <button class="btn solid" onclick="go('write', {currentBookId:null, editingChapterId:null})">+ Viết sách mới</button>
       <button class="btn ghost" onclick="logout()">Đăng xuất</button>`;
   } else {
     nav.innerHTML = `<button class="btn solid" onclick="go('login')">Đăng nhập tác giả</button>`;
@@ -296,15 +358,20 @@ async function render(){
 const views = {
   async home(){
     const books = await loadBooks();
-    const row = books.length ? books.map(b=>`
+    const genres = ['Tất cả', ...new Set(books.map(b=>b.genre||'Khác'))];
+    const filter = state.genreFilter || 'Tất cả';
+    const filtered = filter==='Tất cả' ? books : books.filter(b=>(b.genre||'Khác')===filter);
+    const chips = genres.map(g=>`<button class="chip ${g===filter?'active':''}" onclick="setGenreFilter('${esc(g)}')">${esc(g)}</button>`).join('');
+    const row = filtered.length ? filtered.map(b=>`
       <div class="spine" style="background:${b.color}" onclick="go('book',{currentBookId:'${b.id}'})">
         <span>${esc(b.title)}</span>
         <span class="gold-line"></span>
       </div>`).join('') : '';
     return `
       <h1 class="shelf-title">Kệ sách chung</h1>
-      <p class="shelf-sub">${books.length} cuốn đang chờ được đọc</p>
-      ${books.length ? `<div class="shelf-row">${row}</div>` : `<div class="empty-shelf">Chưa có cuốn sách nào. Hãy là tác giả đầu tiên đăng sách lên đây!</div>`}
+      <p class="shelf-sub">${filtered.length} cuốn đang chờ được đọc</p>
+      ${books.length ? `<div class="chip-row">${chips}</div>` : ''}
+      ${filtered.length ? `<div class="shelf-row">${row}</div>` : `<div class="empty-shelf">${books.length ? 'Chưa có sách thuộc thể loại này.' : 'Chưa có cuốn sách nào. Hãy là tác giả đầu tiên đăng sách lên đây!'}</div>`}
     `;
   },
 
@@ -313,11 +380,13 @@ const views = {
     const book = books.find(b=>b.id===state.currentBookId);
     if(!book) return `<p style="color:#eee">Không tìm thấy sách. <a href="#" onclick="go('home')">Về trang chủ</a></p>`;
     const chapters = await loadChapters(book.id);
+    const comments = await loadComments(book.id);
     return `
       <div class="book-page">
         <div class="book-head">
           <div class="book-cover" style="background:${book.color}">${esc(book.title)}</div>
           <div class="book-meta">
+            <span class="genre-badge">${esc(book.genre||'Khác')}</span>
             <h2>${esc(book.title)}</h2>
             <div class="author-line">của ${esc(book.author)}</div>
             <p>${esc(book.description||'Chưa có mô tả.')}</p>
@@ -331,6 +400,21 @@ const views = {
           </li>`).join('')}
         </ul>` : `<p class="hint">Sách này chưa có chương nào.</p>`}
         <div class="form-actions"><button class="btn ghost" style="color:${'#5A3E2B'};border-color:#5A3E2B" onclick="go('home')">← Về kệ sách</button></div>
+
+        <div class="comment-section">
+          <h3>Bình luận (${comments.length})</h3>
+          ${comments.length ? comments.map(c=>`
+            <div class="comment">
+              <strong>${esc(c.name)}</strong>
+              <p>${esc(c.content)}</p>
+            </div>`).join('') : `<p class="hint">Chưa có bình luận nào — hãy là người đầu tiên!</p>`}
+          <div class="comment-form">
+            <input id="commentName" placeholder="Tên của bạn">
+            <textarea id="commentContent" placeholder="Viết bình luận..."></textarea>
+            <div id="commentErr" class="error"></div>
+            <button class="btn solid" onclick="submitComment('${book.id}')">Gửi bình luận</button>
+          </div>
+        </div>
       </div>`;
   },
 
@@ -381,12 +465,13 @@ const views = {
         ${books.length ? books.map(b=>`
           <div class="dash-item">
             <div>
-              <h3>${esc(b.title)}</h3>
+              <h3>${esc(b.title)} <span class="genre-badge" style="margin-left:6px;vertical-align:middle;">${esc(b.genre||'Khác')}</span></h3>
               <div class="small">${esc(b.description||'')}</div>
             </div>
-            <div style="display:flex;gap:8px;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('book',{currentBookId:'${b.id}'})">Xem</button>
-              <button class="btn solid" onclick="go('write',{currentBookId:'${b.id}'})">+ Thêm chương</button>
+              <button class="btn solid" onclick="go('write',{currentBookId:'${b.id}',editingChapterId:null})">+ Thêm chương</button>
+              <button class="btn ghost" style="color:#6E2A26;border-color:#6E2A26" onclick="confirmDeleteBook('${b.id}','${esc(b.title)}')">Xóa sách</button>
             </div>
           </div>`).join('') : `<p style="color:#eee">Bạn chưa có cuốn sách nào. Bấm "Viết sách mới" để bắt đầu.</p>`}
       </div>`;
@@ -400,6 +485,8 @@ const views = {
           <h2>Sách mới</h2>
           <label>Tên sách</label>
           <input id="newTitle" placeholder="Tên cuốn sách">
+          <label>Thể loại</label>
+          <select id="newGenre">${GENRES.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select>
           <label>Mô tả ngắn</label>
           <textarea id="newDesc" placeholder="Sách này viết về điều gì?"></textarea>
           <div id="writeErr" class="error"></div>
@@ -412,20 +499,27 @@ const views = {
     const books = await loadBooks();
     const book = books.find(b=>b.id===state.currentBookId);
     const chapters = await loadChapters(book.id);
+    const editing = state.editingChapterId ? chapters.find(c=>c.id===state.editingChapterId) : null;
     return `
       <div class="card" style="max-width:640px;">
-        <h2>Thêm chương cho "${esc(book.title)}"</h2>
+        <h2>${editing ? `Sửa chương "${esc(editing.title)}"` : `Thêm chương cho "${esc(book.title)}"`}</h2>
         <label>Tên chương</label>
-        <input id="chapTitle" placeholder="Ví dụ: Chương 1 — Khởi đầu">
+        <input id="chapTitle" placeholder="Ví dụ: Chương 1 — Khởi đầu" value="${editing ? esc(editing.title) : ''}">
         <label>Nội dung (gõ trực tiếp hoặc dán văn bản dài)</label>
-        <textarea id="chapContent" placeholder="Dán hoặc gõ nội dung chương ở đây..." style="min-height:280px;"></textarea>
+        <textarea id="chapContent" placeholder="Dán hoặc gõ nội dung chương ở đây..." style="min-height:280px;">${editing ? esc(editing.content) : ''}</textarea>
         <div id="chapErr" class="error"></div>
         <div class="form-actions">
-          <button class="btn solid" onclick="addChapter()">Đăng chương</button>
-          <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('book',{currentBookId:'${book.id}'})">Xong, xem sách</button>
+          <button class="btn solid" onclick="${editing ? 'saveChapterEdit()' : 'addChapter()'}">${editing ? 'Cập nhật chương' : 'Đăng chương'}</button>
+          ${editing ? `<button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="cancelEditChapter()">Hủy sửa</button>` : `<button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('book',{currentBookId:'${book.id}'})">Xong, xem sách</button>`}
         </div>
         <h3 style="margin-top:30px;">Các chương đã có (${chapters.length})</h3>
-        ${chapters.map((c,i)=>`<div class="chapter-row"><span>${i+1}. ${esc(c.title)}</span></div>`).join('') || '<p class="hint">Chưa có chương nào.</p>'}
+        ${chapters.map((c,i)=>`<div class="chapter-row">
+            <span>${i+1}. ${esc(c.title)}</span>
+            <span class="row-actions">
+              <button class="mini-btn" onclick="editChapter('${c.id}')">Sửa</button>
+              <button class="mini-btn danger" onclick="confirmDeleteChapter('${c.id}','${esc(c.title)}')">Xóa</button>
+            </span>
+          </div>`).join('') || '<p class="hint">Chưa có chương nào.</p>'}
       </div>`;
   }
 };
@@ -475,6 +569,7 @@ async function doLogin(){
 }
 async function createBook(btn){
   const title = document.getElementById('newTitle').value.trim();
+  const genre = document.getElementById('newGenre').value;
   const desc = document.getElementById('newDesc').value.trim();
   const err = document.getElementById('writeErr');
   err.innerText='';
@@ -483,7 +578,7 @@ async function createBook(btn){
   const original = b.innerText;
   b.disabled = true; b.innerText = 'Đang lưu…';
   try{
-    const book = await insertBook(title, desc, state.user);
+    const book = await insertBook(title, desc, state.user, genre);
     go('write', {currentBookId:book.id});
   }catch(e){
     console.error(e);
@@ -506,6 +601,71 @@ async function addChapter(){
   }catch(e){
     console.error(e);
     err.innerText='Không lưu được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+function editChapter(chapterId){
+  state.editingChapterId = chapterId;
+  render();
+}
+function cancelEditChapter(){
+  state.editingChapterId = null;
+  render();
+}
+async function saveChapterEdit(){
+  const title = document.getElementById('chapTitle').value.trim();
+  const content = document.getElementById('chapContent').value;
+  const err = document.getElementById('chapErr');
+  err.innerText='';
+  if(!title || !content.trim()){ err.innerText='Cần có tên chương và nội dung.'; return; }
+  const b = event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang lưu…';
+  try{
+    await updateChapter(state.editingChapterId, title, content);
+    state.editingChapterId = null;
+    go('write', {currentBookId:state.currentBookId});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không lưu được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+async function confirmDeleteChapter(chapterId, title){
+  if(!confirm(`Xóa chương "${title}"? Không thể hoàn tác.`)) return;
+  try{
+    await deleteChapter(chapterId);
+    render();
+  }catch(e){
+    console.error(e);
+    alert('Không xóa được, thử lại nhé.');
+  }
+}
+async function confirmDeleteBook(bookId, title){
+  if(!confirm(`Xóa cả cuốn sách "${title}" cùng toàn bộ chương và bình luận? Không thể hoàn tác.`)) return;
+  try{
+    await deleteBook(bookId);
+    render();
+  }catch(e){
+    console.error(e);
+    alert('Không xóa được, thử lại nhé.');
+  }
+}
+async function submitComment(bookId){
+  const name = document.getElementById('commentName').value.trim();
+  const content = document.getElementById('commentContent').value.trim();
+  const err = document.getElementById('commentErr');
+  err.innerText='';
+  if(!name || !content){ err.innerText='Nhập tên và nội dung bình luận nhé.'; return; }
+  const b = event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang gửi…';
+  try{
+    await insertComment(bookId, name, content);
+    go('book', {currentBookId:bookId});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không gửi được, thử lại nhé.';
     b.disabled = false; b.innerText = original;
   }
 }
