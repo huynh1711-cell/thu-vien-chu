@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Thư Viện Chữ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Lora:ital,wght@0,400;0,500;1,400&family=EB+Garamond:wght@500;600&display=swap');
+
+:root{
+  --paper:#F1E6D0;
+  --paper-dark:#E3D3AC;
+  --wood:#3B281C;
+  --wood-light:#5A3E2B;
+  --leather:#6E2A26;
+  --forest:#32502F;
+  --gold:#AD8447;
+  --ink:#2A2018;
+  --ink-soft:#5C4C3D;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--wood);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.08) 0 2px, transparent 2px 40px),
+    linear-gradient(180deg, var(--wood-light), var(--wood));
+  color:var(--ink);
+  font-family:'EB Garamond', serif;
+  min-height:100vh;
+}
+h1,h2,h3,.display{font-family:'Playfair Display', serif;}
+.reading{font-family:'Lora', serif;}
+
+/* ===== Header ===== */
+header{
+  padding:28px 6vw 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.logo{
+  color:var(--paper);
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.logo .mark{color:var(--gold);}
+nav{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{
+  font-family:'EB Garamond', serif;
+  font-weight:600;
+  letter-spacing:0.6px;
+  text-transform:uppercase;
+  font-size:13px;
+  padding:9px 18px;
+  border-radius:3px;
+  border:1px solid var(--gold);
+  background:transparent;
+  color:var(--paper);
+  cursor:pointer;
+  transition:.15s;
+}
+.btn:hover{background:var(--gold);color:var(--wood);}
+.btn.solid{background:var(--leather);border-color:var(--leather);color:var(--paper);}
+.btn.solid:hover{background:#84332e;}
+.btn.ghost{border-color:rgba(241,230,208,.35);}
+
+/* ===== Page container ===== */
+main{padding:10px 6vw 80px;max-width:1200px;margin:0 auto;}
+
+/* ===== Shelf / library ===== */
+.shelf-title{
+  color:var(--paper);
+  font-size:34px;
+  margin:20px 0 4px;
+}
+.shelf-sub{color:rgba(241,230,208,.6);margin-bottom:34px;font-size:16px;font-style:italic;}
+.shelf-row{
+  display:flex;
+  align-items:flex-end;
+  gap:14px;
+  padding:0 10px 24px;
+  overflow-x:auto;
+  border-bottom:14px solid var(--wood-light);
+  box-shadow:0 18px 22px -14px rgba(0,0,0,.6);
+  margin-bottom:46px;
+}
+.spine{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  height:230px;
+  width:52px;
+  flex:0 0 auto;
+  border-radius:4px 4px 2px 2px;
+  padding:14px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:var(--paper);
+  font-family:'Playfair Display', serif;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  box-shadow:inset -4px 0 8px rgba(0,0,0,.25), 2px 2px 6px rgba(0,0,0,.4);
+  border:1px solid rgba(0,0,0,.25);
+  transition:transform .15s;
+}
+.spine:hover{transform:translateY(-10px);}
+.spine .gold-line{width:80%;height:2px;background:rgba(241,230,208,.5);}
+
+.empty-shelf{
+  color:rgba(241,230,208,.55);
+  font-style:italic;
+  padding:30px 10px;
+  border-bottom:14px solid var(--wood-light);
+  margin-bottom:46px;
+}
+
+/* ===== Genre chips ===== */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+.chip{
+  font-family:'EB Garamond',serif;font-size:13px;font-weight:600;letter-spacing:.4px;
+  padding:6px 15px;border-radius:20px;border:1px solid rgba(241,230,208,.35);
+  background:transparent;color:rgba(241,230,208,.8);cursor:pointer;transition:.15s;
+}
+.chip:hover{border-color:var(--gold);}
+.chip.active{background:var(--gold);color:var(--wood);border-color:var(--gold);}
+.genre-badge{
+  display:inline-block;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+  padding:4px 12px;border-radius:20px;background:var(--forest);color:var(--paper);margin-bottom:10px;
+}
+select{
+  width:100%;padding:11px 13px;border:1px solid var(--paper-dark);border-radius:3px;
+  font-family:'Lora',serif;font-size:15px;background:#fbf6ea;color:var(--ink);
+}
+
+/* ===== Comments ===== */
+.comment-section{margin-top:36px;padding-top:24px;border-top:1px solid var(--paper-dark);}
+.comment{padding:14px 0;border-bottom:1px solid var(--paper-dark);}
+.comment-top{display:flex;justify-content:space-between;align-items:center;}
+.comment strong{font-family:'Playfair Display',serif;color:var(--leather);}
+.comment p{margin:4px 0 0;line-height:1.6;color:var(--ink-soft);}
+.comment-form{margin-top:20px;}
+.comment-form input, .comment-form textarea{margin-bottom:10px;}
+.comment-form textarea{min-height:80px;}
+.reply-box{
+  margin:10px 0 0 18px;padding:10px 14px;background:rgba(0,0,0,.035);border-left:3px solid var(--gold);border-radius:0 3px 3px 0;
+}
+.reply-box strong{color:var(--forest);font-size:13px;text-transform:uppercase;letter-spacing:.4px;font-family:'EB Garamond',serif;}
+.reply-box p{margin:4px 0 0;color:var(--ink-soft);line-height:1.5;}
+.reply-form{margin:10px 0 0 18px;display:flex;gap:8px;}
+.reply-form input{flex:1;margin-bottom:0;}
+
+/* ===== Like button ===== */
+.like-btn{
+  font-family:'EB Garamond',serif;font-weight:600;font-size:14px;
+  padding:8px 16px;border-radius:20px;border:1px solid var(--leather);background:transparent;color:var(--leather);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;margin-top:4px;
+}
+.like-btn:hover{background:var(--leather);color:var(--paper);}
+.like-btn.liked{background:var(--leather);color:var(--paper);cursor:default;}
+.like-btn:disabled{opacity:1;}
+
+/* ===== Cover image ===== */
+.book-cover img{width:100%;height:100%;object-fit:cover;border-radius:3px;}
+.cover-preview{width:90px;height:130px;border-radius:3px;object-fit:cover;margin-top:8px;box-shadow:0 4px 10px rgba(0,0,0,.3);}
+
+/* ===== Small action buttons on chapter rows ===== */
+.chapter-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--paper-dark);gap:10px;}
+.chapter-row .row-actions{display:flex;gap:6px;flex-shrink:0;}
+.mini-btn{
+  font-family:'EB Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+  padding:5px 12px;border-radius:3px;border:1px solid var(--ink-soft);background:transparent;color:var(--ink-soft);cursor:pointer;
+}
+.mini-btn:hover{border-color:var(--leather);color:var(--leather);}
+.mini-btn.danger:hover{background:var(--leather);color:var(--paper);border-color:var(--leather);}
+
+/* ===== Book card / detail ===== */
+.book-page{
+  background:var(--paper);
+  border-radius:4px;
+  padding:40px 44px;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+  background-image:radial-gradient(circle at 90% 10%, rgba(0,0,0,.03), transparent 60%);
+}
+.book-head{display:flex;gap:30px;flex-wrap:wrap;margin-bottom:20px;}
+.book-cover{
+  width:130px;height:190px;border-radius:3px;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  color:var(--paper);font-family:'Playfair Display',serif;font-weight:700;font-size:15px;
+  padding:14px;box-shadow:0 8px 18px rgba(0,0,0,.35);
+}
+.book-meta h2{margin:0 0 6px;font-size:30px;}
+.book-meta .author-line{color:var(--ink-soft);font-style:italic;margin-bottom:14px;}
+.book-meta p{line-height:1.6;color:var(--ink-soft);max-width:60ch;}
+
+.chapter-list{list-style:none;padding:0;margin-top:24px;border-top:1px solid var(--paper-dark);}
+.chapter-list li{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:15px 4px;border-bottom:1px solid var(--paper-dark);cursor:pointer;
+}
+.chapter-list li:hover{background:rgba(0,0,0,.03);}
+.chapter-list .num{color:var(--gold);font-weight:600;margin-right:10px;font-family:'Playfair Display',serif;}
+.chapter-list .arrow{color:var(--ink-soft);}
+
+/* ===== Reading view ===== */
+.read-wrap{
+  background:var(--paper);
+  border-radius:4px;
+  padding:56px 8vw;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+  max-width:820px;margin:0 auto;
+}
+.read-wrap h2{font-size:30px;margin-bottom:2px;}
+.read-wrap .bookname{color:var(--ink-soft);font-style:italic;margin-bottom:30px;}
+.read-body{font-size:19px;line-height:1.9;white-space:pre-wrap;color:var(--ink);}
+.read-body::first-letter{
+  font-family:'Playfair Display',serif;
+  font-size:64px;font-weight:900;float:left;line-height:0.8;
+  padding:8px 8px 0 0;color:var(--leather);
+}
+
+/* ===== Forms ===== */
+.card{
+  background:var(--paper);
+  max-width:480px;margin:20px auto;padding:38px 40px;border-radius:4px;
+  box-shadow:0 20px 50px rgba(0,0,0,.45);
+}
+.card h2{margin-top:0;}
+label{display:block;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);margin:16px 0 6px;}
+input,textarea{
+  width:100%;padding:11px 13px;border:1px solid var(--paper-dark);border-radius:3px;
+  font-family:'Lora',serif;font-size:15px;background:#fbf6ea;color:var(--ink);
+}
+textarea{min-height:160px;resize:vertical;}
+.form-actions{margin-top:24px;display:flex;gap:10px;}
+.hint{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+.error{color:var(--leather);font-size:14px;margin-top:10px;}
+
+/* ===== Dashboard ===== */
+.dash-list{margin-top:20px;}
+.dash-item{
+  background:var(--paper);border-radius:4px;padding:20px 24px;margin-bottom:14px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+  box-shadow:0 10px 26px rgba(0,0,0,.3);
+}
+.dash-item h3{margin:0 0 4px;}
+.dash-item .small{color:var(--ink-soft);font-size:14px;}
+.chapter-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--paper-dark);}
+
+footer{text-align:center;color:rgba(241,230,208,.4);font-size:13px;padding:20px;font-style:italic;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" onclick="go('home')"><span class="mark">📖</span> Thư Viện Chữ</div>
+  <nav id="nav"></nav>
+</header>
+<main id="app"></main>
+<footer>Đăng sách của bạn, để người khác đọc — miễn phí.</footer>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+// ====== DÁN THÔNG TIN SUPABASE CỦA BẠN VÀO ĐÂY ======
+// Lấy 2 giá trị này ở: Project Settings → API (trong Supabase)
+const SUPABASE_URL = "https://qwlypeoomubzzrorpzuf.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3bHlwZW9vbXVienpyb3JwenVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5ODM5MjcsImV4cCI6MjEwMDU1OTkyN30.US9j-uRR2Wzd81NE3iD9B9wzdUX9YewGalN_I3oU_t8";
+// =====================================================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const COLORS = ['#6E2A26','#32502F','#AD8447','#3B4C63','#5A3E2B','#7A4A2A'];
+function colorFor(str){
+  let h=0; for(const c of (str||'x')) h=(h*31+c.charCodeAt(0))>>>0;
+  return COLORS[h%COLORS.length];
+}
+function esc(s){ const d=document.createElement('div'); d.innerText=s??''; return d.innerHTML; }
+function simpleHash(s){ let h=0; for(const c of s) h=(h*33+c.charCodeAt(0))>>>0; return h.toString(36); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+let state = { view:'home', user:null, currentBookId:null, currentChapterId:null, genreFilter:'Tất cả', editingChapterId:null };
+let likedThisSession = new Set();
+let replyingCommentId = null;
+
+function setGenreFilter(g){ state.genreFilter = g; render(); }
+
+const GENRES = ['Tiểu thuyết','Ngôn tình','Trinh thám','Kinh dị','Khoa học viễn tưởng','Kỳ ảo','Đời thường','Truyện ngắn','Khác'];
+
+async function loadBooks(){
+  const { data, error } = await sb.from('books').select('*').order('created_at', {ascending:false});
+  if(error) throw error;
+  return data.map(b=>({id:b.id, title:b.title, description:b.description, author:b.author, color:b.color, genre:b.genre||'Khác', likes:b.likes||0, cover_url:b.cover_url||null}));
+}
+async function insertBook(title, description, author, genre, coverUrl){
+  const color = colorFor(title+author);
+  const { data, error } = await sb.from('books').insert({title, description, author, color, genre, cover_url:coverUrl||null}).select().single();
+  if(error) throw error;
+  return data;
+}
+async function updateBookDB(bookId, title, description, genre, coverUrl){
+  const patch = {title, description, genre};
+  if(coverUrl !== undefined) patch.cover_url = coverUrl;
+  const { error } = await sb.from('books').update(patch).eq('id', bookId);
+  if(error) throw error;
+}
+function sanitizeFileName(name){
+  const parts = name.split('.');
+  const ext = parts.length > 1 ? parts.pop().toLowerCase().replace(/[^a-z0-9]/g,'') : 'jpg';
+  const base = parts.join('.')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')   // bỏ dấu tiếng Việt
+    .replace(/đ/gi,'d')
+    .replace(/[^a-zA-Z0-9]+/g,'-')                      // khoảng trắng/ký tự lạ -> gạch ngang
+    .replace(/^-+|-+$/g,'')
+    .toLowerCase();
+  return `${base||'anh'}.${ext||'jpg'}`;
+}
+async function uploadCover(file){
+  const safeName = sanitizeFileName(file.name);
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safeName}`;
+  const { error } = await sb.storage.from('covers').upload(path, file);
+  if(error) throw error;
+  const { data } = sb.storage.from('covers').getPublicUrl(path);
+  return data.publicUrl;
+}
+async function likeBookDB(bookId, newCount){
+  const { error } = await sb.from('books').update({likes:newCount}).eq('id', bookId);
+  if(error) throw error;
+}
+async function deleteBook(bookId){
+  const { error } = await sb.from('books').delete().eq('id', bookId);
+  if(error) throw error;
+}
+async function loadChapters(bookId){
+  const { data, error } = await sb.from('chapters').select('*').eq('book_id', bookId).order('created_at', {ascending:true});
+  if(error) throw error;
+  return data.map(c=>({id:c.id, title:c.title, content:c.content}));
+}
+async function insertChapter(bookId, title, content){
+  const { error } = await sb.from('chapters').insert({book_id:bookId, title, content});
+  if(error) throw error;
+}
+async function updateChapter(chapterId, title, content){
+  const { error } = await sb.from('chapters').update({title, content}).eq('id', chapterId);
+  if(error) throw error;
+}
+async function deleteChapter(chapterId){
+  const { error } = await sb.from('chapters').delete().eq('id', chapterId);
+  if(error) throw error;
+}
+async function loadComments(bookId){
+  const { data, error } = await sb.from('comments').select('*').eq('book_id', bookId).order('created_at', {ascending:false});
+  if(error) throw error;
+  return data;
+}
+async function insertComment(bookId, name, content){
+  const { error } = await sb.from('comments').insert({book_id:bookId, name, content});
+  if(error) throw error;
+}
+async function deleteComment(commentId){
+  const { error } = await sb.from('comments').delete().eq('id', commentId);
+  if(error) throw error;
+}
+async function replyToComment(commentId, reply){
+  const { error } = await sb.from('comments').update({reply, replied_at:new Date().toISOString()}).eq('id', commentId);
+  if(error) throw error;
+}
+async function usernameTaken(u){
+  const { data, error } = await sb.rpc('username_exists', {p_username:u});
+  if(error) throw error;
+  return data;
+}
+async function signupAuthor(u, passHash){
+  const { error } = await sb.from('authors').insert({username:u, password_hash:passHash});
+  if(error) throw error;
+}
+async function checkLogin(u, passHash){
+  const { data, error } = await sb.rpc('login_author', {p_username:u, p_password_hash:passHash});
+  if(error) throw error;
+  return data;
+}
+
+function go(view, extra){ state = {...state, view, ...extra}; render(); }
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  if(state.user){
+    nav.innerHTML = `
+      <span class="btn ghost" style="cursor:default">Xin chào, ${esc(state.user)}</span>
+      <button class="btn" onclick="go('dashboard')">Sách của tôi</button>
+      <button class="btn solid" onclick="go('write', {currentBookId:null, editingChapterId:null})">+ Viết sách mới</button>
+      <button class="btn ghost" onclick="logout()">Đăng xuất</button>`;
+  } else {
+    nav.innerHTML = `<button class="btn solid" onclick="go('login')">Đăng nhập</button>`;
+  }
+}
+function logout(){ state.user = null; go('home'); }
+
+async function render(){
+  renderNav();
+  const app = document.getElementById('app');
+  app.innerHTML = '<p style="color:#eee;padding:40px;text-align:center;">Đang tải…</p>';
+  try{
+    const html = await views[state.view]();
+    app.innerHTML = html;
+  }catch(e){
+    console.error(e);
+    app.innerHTML = `<div class="card"><h2>Có lỗi xảy ra</h2>
+      <p class="hint">Không tải được dữ liệu. Có thể do kết nối chậm — thử lại nhé.</p>
+      <div class="form-actions"><button class="btn solid" onclick="render()">Thử lại</button>
+      <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('home')">Về trang chủ</button></div></div>`;
+  }
+}
+
+const views = {
+  async home(){
+    const books = await loadBooks();
+    const genres = ['Tất cả', ...new Set(books.map(b=>b.genre||'Khác'))];
+    const filter = state.genreFilter || 'Tất cả';
+    const filtered = filter==='Tất cả' ? books : books.filter(b=>(b.genre||'Khác')===filter);
+    const chips = genres.map(g=>`<button class="chip ${g===filter?'active':''}" onclick="setGenreFilter('${esc(g)}')">${esc(g)}</button>`).join('');
+    const row = filtered.length ? filtered.map(b=>`
+      <div class="spine" style="background:${b.color}" onclick="go('book',{currentBookId:'${b.id}'})">
+        <span>${esc(b.title)}</span>
+        <span class="gold-line"></span>
+      </div>`).join('') : '';
+    return `
+      <h1 class="shelf-title">Kệ sách chung</h1>
+      <p class="shelf-sub">${filtered.length} cuốn đang chờ được đọc</p>
+      ${books.length ? `<div class="chip-row">${chips}</div>` : ''}
+      ${filtered.length ? `<div class="shelf-row">${row}</div>` : `<div class="empty-shelf">${books.length ? 'Chưa có sách thuộc thể loại này.' : 'Chưa có cuốn sách nào. Hãy là tác giả đầu tiên đăng sách lên đây!'}</div>`}
+    `;
+  },
+
+  async book(){
+    const books = await loadBooks();
+    const book = books.find(b=>b.id===state.currentBookId);
+    if(!book) return `<p style="color:#eee">Không tìm thấy sách. <a href="#" onclick="go('home')">Về trang chủ</a></p>`;
+    const chapters = await loadChapters(book.id);
+    const comments = await loadComments(book.id);
+    const isOwner = state.user && state.user===book.author;
+    const liked = likedThisSession.has(book.id);
+    return `
+      <div class="book-page">
+        <div class="book-head">
+          <div class="book-cover" style="background:${book.color}">${book.cover_url ? `<img src="${esc(book.cover_url)}" alt="Bìa sách">` : esc(book.title)}</div>
+          <div class="book-meta">
+            <span class="genre-badge">${esc(book.genre||'Khác')}</span>
+            <h2>${esc(book.title)}</h2>
+            <div class="author-line">của ${esc(book.author)}</div>
+            <p>${esc(book.description||'Chưa có mô tả.')}</p>
+            <button class="like-btn ${liked?'liked':''}" ${liked?'disabled':''} onclick="likeBook('${book.id}', ${book.likes})">❤ ${liked ? 'Đã thích' : 'Thích'} (${book.likes})</button>
+          </div>
+        </div>
+        <h3 style="margin-top:30px;">Danh sách chương (${chapters.length})</h3>
+        ${chapters.length ? `<ul class="chapter-list">
+          ${chapters.map((c,i)=>`<li onclick="go('read',{currentBookId:'${book.id}',currentChapterId:'${c.id}'})">
+            <span><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</span>
+            <span class="arrow">Đọc →</span>
+          </li>`).join('')}
+        </ul>` : `<p class="hint">Sách này chưa có chương nào.</p>`}
+        <div class="form-actions"><button class="btn ghost" style="color:${'#5A3E2B'};border-color:#5A3E2B" onclick="go('home')">← Về kệ sách</button></div>
+
+        <div class="comment-section">
+          <h3>Bình luận (${comments.length})</h3>
+          ${comments.length ? comments.map(c=>`
+            <div class="comment">
+              <div class="comment-top">
+                <strong>${esc(c.name)}</strong>
+                ${state.user===c.name ? `<button class="mini-btn danger" onclick="confirmDeleteComment('${c.id}')">Xóa</button>` : ''}
+              </div>
+              <p>${esc(c.content)}</p>
+              ${c.reply ? `<div class="reply-box"><strong>Phản hồi từ ${esc(book.author)}</strong><p>${esc(c.reply)}</p></div>` : (isOwner ? (replyingCommentId===c.id ? `
+                <div class="reply-form">
+                  <input id="replyInput-${c.id}" placeholder="Viết phản hồi...">
+                  <button class="mini-btn" onclick="submitReply('${c.id}','${book.id}')">Gửi</button>
+                  <button class="mini-btn" onclick="cancelReply()">Hủy</button>
+                </div>` : `<button class="mini-btn" style="margin:8px 0 0 18px;" onclick="startReply('${c.id}')">Phản hồi</button>`) : '')}
+            </div>`).join('') : `<p class="hint">Chưa có bình luận nào — hãy là người đầu tiên!</p>`}
+          <div class="comment-form">
+            ${state.user ? `
+              <textarea id="commentContent" placeholder="Viết bình luận (đang đăng với tên ${esc(state.user)})..."></textarea>
+              <div id="commentErr" class="error"></div>
+              <button class="btn solid" onclick="submitComment('${book.id}')">Gửi bình luận</button>
+            ` : `<p class="hint">Bạn cần <a href="#" onclick="go('login')" style="color:var(--leather);font-weight:600;">đăng nhập</a> để bình luận.</p>`}
+          </div>
+        </div>
+      </div>`;
+  },
+
+  async read(){
+    const chapters = await loadChapters(state.currentBookId);
+    const books = await loadBooks();
+    const book = books.find(b=>b.id===state.currentBookId);
+    const chapter = chapters.find(c=>c.id===state.currentChapterId);
+    if(!chapter) return `<p style="color:#eee">Không tìm thấy chương.</p>`;
+    const idx = chapters.findIndex(c=>c.id===chapter.id);
+    const prev = chapters[idx-1], next = chapters[idx+1];
+    return `
+      <div class="read-wrap">
+        <div class="bookname">${esc(book?.title||'')}</div>
+        <h2>${esc(chapter.title)}</h2>
+        <div class="read-body reading">${esc(chapter.content)}</div>
+        <div class="form-actions" style="margin-top:40px;justify-content:space-between;">
+          <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" ${prev?`onclick="go('read',{currentChapterId:'${prev.id}'})"`:'disabled'}>← Chương trước</button>
+          <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('book',{currentBookId:'${state.currentBookId}'})">Mục lục</button>
+          <button class="btn solid" ${next?`onclick="go('read',{currentChapterId:'${next.id}'})"`:'disabled'}>Chương sau →</button>
+        </div>
+      </div>`;
+  },
+
+  async login(){
+    return `
+      <div class="card">
+        <h2>Đăng nhập</h2>
+        <p class="hint">Cần tài khoản để bình luận hoặc đăng sách. Chưa có tài khoản? Điền tên và mật khẩu rồi bấm "Tạo tài khoản & đăng nhập" — hệ thống sẽ tự tạo mới.</p>
+        <label>Tên hiển thị</label>
+        <input id="authUser" placeholder="Ví dụ: Huy Nguyễn">
+        <label>Mật khẩu</label>
+        <input id="authPass" type="password" placeholder="Mật khẩu">
+        <div id="authErr" class="error"></div>
+        <div class="form-actions">
+          <button class="btn solid" onclick="doLogin()">Đăng nhập</button>
+          <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="doSignup()">Tạo tài khoản & đăng nhập</button>
+        </div>
+      </div>`;
+  },
+
+  async dashboard(){
+    if(!state.user) { go('login'); return ''; }
+    const books = (await loadBooks()).filter(b=>b.author===state.user);
+    return `
+      <h1 class="shelf-title" style="margin-top:6px;">Sách của tôi</h1>
+      <div class="dash-list">
+        ${books.length ? books.map(b=>`
+          <div class="dash-item">
+            <div>
+              <h3>${esc(b.title)} <span class="genre-badge" style="margin-left:6px;vertical-align:middle;">${esc(b.genre||'Khác')}</span></h3>
+              <div class="small">${esc(b.description||'')}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('book',{currentBookId:'${b.id}'})">Xem</button>
+              <button class="btn solid" onclick="go('write',{currentBookId:'${b.id}',editingChapterId:null})">+ Thêm chương</button>
+              <button class="btn ghost" style="color:var(--forest);border-color:var(--forest)" onclick="go('editBook',{currentBookId:'${b.id}'})">Sửa thông tin</button>
+              <button class="btn ghost" style="color:#6E2A26;border-color:#6E2A26" onclick="confirmDeleteBook('${b.id}','${esc(b.title)}')">Xóa sách</button>
+            </div>
+          </div>`).join('') : `<p style="color:#eee">Bạn chưa có cuốn sách nào. Bấm "Viết sách mới" để bắt đầu.</p>`}
+      </div>`;
+  },
+
+  async editBook(){
+    if(!state.user){ go('login'); return ''; }
+    const books = await loadBooks();
+    const book = books.find(b=>b.id===state.currentBookId);
+    if(!book) return `<p style="color:#eee">Không tìm thấy sách.</p>`;
+    if(book.author !== state.user) return `<p style="color:#eee">Bạn không có quyền sửa cuốn sách này.</p>`;
+    return `
+      <div class="card">
+        <h2>Sửa thông tin sách</h2>
+        <label>Tên sách</label>
+        <input id="editTitle" value="${esc(book.title)}">
+        <label>Thể loại</label>
+        <select id="editGenre">${GENRES.map(g=>`<option value="${esc(g)}" ${g===book.genre?'selected':''}>${esc(g)}</option>`).join('')}</select>
+        <label>Ảnh bìa hiện tại</label>
+        ${book.cover_url ? `<img src="${esc(book.cover_url)}" class="cover-preview">` : `<p class="hint">Chưa có ảnh bìa, đang dùng gáy sách màu mặc định.</p>`}
+        <label style="margin-top:14px;">Đổi ảnh bìa (bỏ trống nếu giữ nguyên)</label>
+        <input id="editCover" type="file" accept="image/*">
+        <label>Mô tả ngắn</label>
+        <textarea id="editDesc">${esc(book.description||'')}</textarea>
+        <div id="editErr" class="error"></div>
+        <div class="form-actions">
+          <button class="btn solid" onclick="saveBookEdit('${book.id}')">Lưu thay đổi</button>
+          <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('dashboard')">Hủy</button>
+        </div>
+      </div>`;
+  },
+
+  async write(){
+    if(!state.user){ go('login'); return ''; }
+    if(!state.currentBookId){
+      return `
+        <div class="card">
+          <h2>Sách mới</h2>
+          <label>Tên sách</label>
+          <input id="newTitle" placeholder="Tên cuốn sách">
+          <label>Thể loại</label>
+          <select id="newGenre">${GENRES.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select>
+          <label>Ảnh bìa (không bắt buộc)</label>
+          <input id="newCover" type="file" accept="image/*">
+          <p class="hint">Nếu không chọn ảnh, sách sẽ dùng gáy sách màu mặc định.</p>
+          <label>Mô tả ngắn</label>
+          <textarea id="newDesc" placeholder="Sách này viết về điều gì?"></textarea>
+          <div id="writeErr" class="error"></div>
+          <div class="form-actions">
+            <button class="btn solid" onclick="createBook()">Tạo sách</button>
+            <button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('dashboard')">Hủy</button>
+          </div>
+        </div>`;
+    }
+    const books = await loadBooks();
+    const book = books.find(b=>b.id===state.currentBookId);
+    const chapters = await loadChapters(book.id);
+    const editing = state.editingChapterId ? chapters.find(c=>c.id===state.editingChapterId) : null;
+    return `
+      <div class="card" style="max-width:640px;">
+        <h2>${editing ? `Sửa chương "${esc(editing.title)}"` : `Thêm chương cho "${esc(book.title)}"`}</h2>
+        <label>Tên chương</label>
+        <input id="chapTitle" placeholder="Ví dụ: Chương 1 — Khởi đầu" value="${editing ? esc(editing.title) : ''}">
+        <label>Nội dung (gõ trực tiếp hoặc dán văn bản dài)</label>
+        <textarea id="chapContent" placeholder="Dán hoặc gõ nội dung chương ở đây..." style="min-height:280px;">${editing ? esc(editing.content) : ''}</textarea>
+        <div id="chapErr" class="error"></div>
+        <div class="form-actions">
+          <button class="btn solid" onclick="${editing ? 'saveChapterEdit()' : 'addChapter()'}">${editing ? 'Cập nhật chương' : 'Đăng chương'}</button>
+          ${editing ? `<button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="cancelEditChapter()">Hủy sửa</button>` : `<button class="btn ghost" style="color:#5A3E2B;border-color:#5A3E2B" onclick="go('book',{currentBookId:'${book.id}'})">Xong, xem sách</button>`}
+        </div>
+        <h3 style="margin-top:30px;">Các chương đã có (${chapters.length})</h3>
+        ${chapters.map((c,i)=>`<div class="chapter-row">
+            <span>${i+1}. ${esc(c.title)}</span>
+            <span class="row-actions">
+              <button class="mini-btn" onclick="editChapter('${c.id}')">Sửa</button>
+              <button class="mini-btn danger" onclick="confirmDeleteChapter('${c.id}','${esc(c.title)}')">Xóa</button>
+            </span>
+          </div>`).join('') || '<p class="hint">Chưa có chương nào.</p>'}
+      </div>`;
+  }
+};
+
+async function doSignup(){
+  const u = document.getElementById('authUser').value.trim();
+  const p = document.getElementById('authPass').value;
+  const err = document.getElementById('authErr');
+  err.innerText='';
+  if(!u || !p){ err.innerText='Nhập đủ tên và mật khẩu nhé.'; return; }
+  const b = event.target; const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang xử lý…';
+  try{
+    if(await usernameTaken(u)){
+      err.innerText='Tên này đã có người dùng — chọn tên khác hoặc bấm Đăng nhập.';
+      b.disabled = false; b.innerText = original; return;
+    }
+    await signupAuthor(u, simpleHash(p));
+    state.user = u;
+    go('dashboard');
+  }catch(e){
+    console.error(e);
+    err.innerText='Không kết nối được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+async function doLogin(){
+  const u = document.getElementById('authUser').value.trim();
+  const p = document.getElementById('authPass').value;
+  const err = document.getElementById('authErr');
+  err.innerText='';
+  const b = event.target; const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang xử lý…';
+  try{
+    const ok = await checkLogin(u, simpleHash(p));
+    if(!ok){
+      err.innerText='Sai tên hoặc mật khẩu, hoặc tài khoản chưa tồn tại.';
+      b.disabled = false; b.innerText = original; return;
+    }
+    state.user = u;
+    go('dashboard');
+  }catch(e){
+    console.error(e);
+    err.innerText='Không kết nối được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+async function createBook(btn){
+  const title = document.getElementById('newTitle').value.trim();
+  const genre = document.getElementById('newGenre').value;
+  const desc = document.getElementById('newDesc').value.trim();
+  const coverFile = document.getElementById('newCover').files[0];
+  const err = document.getElementById('writeErr');
+  err.innerText='';
+  if(!title){ err.innerText='Nhập tên sách nhé.'; return; }
+  const b = btn || event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang lưu…';
+  try{
+    let coverUrl = null;
+    if(coverFile){
+      b.innerText = 'Đang tải ảnh lên…';
+      coverUrl = await uploadCover(coverFile);
+      b.innerText = 'Đang lưu…';
+    }
+    const book = await insertBook(title, desc, state.user, genre, coverUrl);
+    go('write', {currentBookId:book.id});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không lưu được, thử lại nhé. (Nếu vừa chọn ảnh, kiểm tra đã tạo bucket "covers" trên Supabase chưa)';
+    b.disabled = false; b.innerText = original;
+  }
+}
+async function likeBook(bookId, currentLikes){
+  if(likedThisSession.has(bookId)) return;
+  likedThisSession.add(bookId);
+  try{
+    await likeBookDB(bookId, currentLikes+1);
+    render();
+  }catch(e){
+    console.error(e);
+    likedThisSession.delete(bookId);
+    alert('Không thích được, thử lại nhé.');
+  }
+}
+async function confirmDeleteComment(commentId){
+  if(!confirm('Xóa bình luận này? Không thể hoàn tác.')) return;
+  try{
+    await deleteComment(commentId);
+    render();
+  }catch(e){
+    console.error(e);
+    alert('Không xóa được, thử lại nhé.');
+  }
+}
+function startReply(commentId){ replyingCommentId = commentId; render(); }
+function cancelReply(){ replyingCommentId = null; render(); }
+async function submitReply(commentId, bookId){
+  const input = document.getElementById('replyInput-'+commentId);
+  const text = input.value.trim();
+  if(!text) return;
+  try{
+    await replyToComment(commentId, text);
+    replyingCommentId = null;
+    go('book', {currentBookId:bookId});
+  }catch(e){
+    console.error(e);
+    alert('Không gửi được, thử lại nhé.');
+  }
+}
+async function addChapter(){
+  const title = document.getElementById('chapTitle').value.trim();
+  const content = document.getElementById('chapContent').value;
+  const err = document.getElementById('chapErr');
+  err.innerText='';
+  if(!title || !content.trim()){ err.innerText='Cần có tên chương và nội dung.'; return; }
+  const b = event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang lưu…';
+  try{
+    await insertChapter(state.currentBookId, title, content);
+    go('write', {currentBookId:state.currentBookId});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không lưu được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+function editChapter(chapterId){
+  state.editingChapterId = chapterId;
+  render();
+}
+function cancelEditChapter(){
+  state.editingChapterId = null;
+  render();
+}
+async function saveChapterEdit(){
+  const title = document.getElementById('chapTitle').value.trim();
+  const content = document.getElementById('chapContent').value;
+  const err = document.getElementById('chapErr');
+  err.innerText='';
+  if(!title || !content.trim()){ err.innerText='Cần có tên chương và nội dung.'; return; }
+  const b = event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang lưu…';
+  try{
+    await updateChapter(state.editingChapterId, title, content);
+    state.editingChapterId = null;
+    go('write', {currentBookId:state.currentBookId});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không lưu được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+async function confirmDeleteChapter(chapterId, title){
+  if(!confirm(`Xóa chương "${title}"? Không thể hoàn tác.`)) return;
+  try{
+    await deleteChapter(chapterId);
+    render();
+  }catch(e){
+    console.error(e);
+    alert('Không xóa được, thử lại nhé.');
+  }
+}
+async function confirmDeleteBook(bookId, title){
+  if(!confirm(`Xóa cả cuốn sách "${title}" cùng toàn bộ chương và bình luận? Không thể hoàn tác.`)) return;
+  try{
+    await deleteBook(bookId);
+    render();
+  }catch(e){
+    console.error(e);
+    alert('Không xóa được, thử lại nhé.');
+  }
+}
+async function submitComment(bookId){
+  if(!state.user){ go('login'); return; }
+  const content = document.getElementById('commentContent').value.trim();
+  const err = document.getElementById('commentErr');
+  err.innerText='';
+  if(!content){ err.innerText='Nhập nội dung bình luận nhé.'; return; }
+  const b = event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang gửi…';
+  try{
+    await insertComment(bookId, state.user, content);
+    go('book', {currentBookId:bookId});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không gửi được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+async function saveBookEdit(bookId){
+  const title = document.getElementById('editTitle').value.trim();
+  const genre = document.getElementById('editGenre').value;
+  const desc = document.getElementById('editDesc').value.trim();
+  const coverFile = document.getElementById('editCover').files[0];
+  const err = document.getElementById('editErr');
+  err.innerText='';
+  if(!title){ err.innerText='Tên sách không được để trống.'; return; }
+  const b = event.target;
+  const original = b.innerText;
+  b.disabled = true; b.innerText = 'Đang lưu…';
+  try{
+    let coverUrl = undefined;
+    if(coverFile){
+      b.innerText = 'Đang tải ảnh lên…';
+      coverUrl = await uploadCover(coverFile);
+      b.innerText = 'Đang lưu…';
+    }
+    await updateBookDB(bookId, title, desc, genre, coverUrl);
+    go('book', {currentBookId:bookId});
+  }catch(e){
+    console.error(e);
+    err.innerText='Không lưu được, thử lại nhé.';
+    b.disabled = false; b.innerText = original;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
